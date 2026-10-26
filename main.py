@@ -30,6 +30,7 @@ def ejecutar_demostracion():
     print(f"Daño del Mago: {danio_mago} (esperado: 40)")
 
     objetivo.vida = 100
+    objetivo.defensa = 15
     danio_arquero = arquero.atacar(objetivo)
     print(f"Daño del Arquero: {danio_arquero} (esperado: 40)")
 
