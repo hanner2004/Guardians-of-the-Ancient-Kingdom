@@ -1,19 +1,17 @@
-"""Clases del sistema Guardians of the Ancient Kingdom.
 
-Este módulo define los personajes y el administrador del combate.
-No ejecuta demostraciones ni pruebas al importarse.
-"""
+"""Clases principales del reino de Eldoria."""
+
 from abc import ABC, abstractmethod
 
 
-class Personaje(ABC):
-    """Clase base abstracta para todos los guardianes."""
+class Combatiente(ABC):
+    """Clase abstracta que representa a un luchador del reino."""
 
-    def __init__(self, nombre, vida, ataque, defensa):
+    def __init__(self, nombre, energia, poder, resistencia):
         self.nombre = nombre
-        self.vida = vida
-        self.ataque = ataque
-        self.defensa = defensa
+        self.energia = energia
+        self.poder = poder
+        self.resistencia = resistencia
 
     @property
     def nombre(self):
@@ -22,188 +20,199 @@ class Personaje(ABC):
     @nombre.setter
     def nombre(self, valor):
         if not isinstance(valor, str) or not valor.strip():
-            raise ValueError("El nombre debe ser un texto no vacío.")
+            raise ValueError("El nombre no puede estar vacío.")
         self.__nombre = valor.strip()
 
     @property
-    def vida(self):
-        return self.__vida
+    def energia(self):
+        return self.__energia
 
-    @vida.setter
-    def vida(self, valor):
+    @energia.setter
+    def energia(self, valor):
         if isinstance(valor, bool) or not isinstance(valor, int):
-            raise TypeError("La vida debe ser un número entero.")
-        if not 0 <= valor <= 100:
-            raise ValueError("La vida debe estar entre 0 y 100.")
-        self.__vida = valor
+            raise TypeError("La energía debe ser un número entero.")
+        if not 0 <= valor <= 120:
+            raise ValueError("La energía debe estar entre 0 y 120.")
+        self.__energia = valor
 
     @property
-    def ataque(self):
-        return self.__ataque
+    def poder(self):
+        return self.__poder
 
-    @ataque.setter
-    def ataque(self, valor):
+    @poder.setter
+    def poder(self, valor):
         if isinstance(valor, bool) or not isinstance(valor, int):
-            raise TypeError("El ataque debe ser un número entero.")
+            raise TypeError("El poder debe ser un número entero.")
         if valor <= 0:
-            raise ValueError("El ataque debe ser positivo.")
-        self.__ataque = valor
+            raise ValueError("El poder debe ser mayor que cero.")
+        self.__poder = valor
 
     @property
-    def defensa(self):
-        return self.__defensa
+    def resistencia(self):
+        return self.__resistencia
 
-    @defensa.setter
-    def defensa(self, valor):
+    @resistencia.setter
+    def resistencia(self, valor):
         if isinstance(valor, bool) or not isinstance(valor, int):
-            raise TypeError("La defensa debe ser un número entero.")
+            raise TypeError("La resistencia debe ser un número entero.")
         if valor < 0:
-            raise ValueError("La defensa no puede ser negativa.")
-        self.__defensa = valor
+            raise ValueError("La resistencia no puede ser negativa.")
+        self.__resistencia = valor
 
-    def recibir_danio(self, cantidad):
-        """Aplica un daño ya calculado y devuelve el daño efectivo."""
+    def recibir_impacto(self, cantidad):
+        """Reduce la energía y devuelve el impacto efectivo."""
         if isinstance(cantidad, bool) or not isinstance(cantidad, int):
-            raise TypeError("El daño debe ser un número entero.")
+            raise TypeError("El impacto debe ser un número entero.")
         if cantidad < 0:
-            raise ValueError("El daño no puede ser negativo.")
+            raise ValueError("El impacto no puede ser negativo.")
 
-        vida_anterior = self.vida
-        self.vida = max(0, self.vida - cantidad)
-        return vida_anterior - self.vida
+        anterior = self.energia
+        self.energia = max(0, self.energia - cantidad)
+        return anterior - self.energia
 
-    def esta_vivo(self):
-        return self.vida > 0
+    def sigue_en_pie(self):
+        return self.energia > 0
 
-    def mostrar_estado(self):
+    def mostrar_datos(self):
         return (
-            f"{self.nombre} ({self.__class__.__name__}) | "
-            f"Vida: {self.vida} | Ataque: {self.ataque} | "
-            f"Defensa: {self.defensa}"
+            f"{self.nombre} ({type(self).__name__}) | "
+            f"Energía: {self.energia} | Poder: {self.poder} | "
+            f"Resistencia: {self.resistencia}"
         )
 
-    def _validar_objetivo(self, objetivo):
-        if not isinstance(objetivo, Personaje):
-            raise TypeError("El objetivo debe ser un personaje válido.")
-        if not self.esta_vivo():
-            raise ValueError(f"{self.nombre} no puede atacar porque está derrotado.")
-        if not objetivo.esta_vivo():
-            raise ValueError(f"{objetivo.nombre} ya está derrotado.")
+    def validar_rival(self, rival):
+        if not isinstance(rival, Combatiente):
+            raise TypeError("El rival debe ser un combatiente válido.")
+        if not self.sigue_en_pie():
+            raise ValueError(f"{self.nombre} ya fue derrotado.")
+        if not rival.sigue_en_pie():
+            raise ValueError(f"{rival.nombre} ya está fuera de combate.")
 
     @abstractmethod
-    def atacar(self, objetivo):
-        """Calcula y aplica el ataque propio de cada clase."""
+    def ejecutar_habilidad(self, rival):
+        """Cada especialidad define su propia forma de atacar."""
         raise NotImplementedError
 
 
-class Guerrero(Personaje):
-    """Guardián que aumenta su ataque un 20 %."""
+class Centinela(Combatiente):
+    """Especialista en golpes físicos reforzados."""
 
-    def atacar(self, objetivo):
-        self._validar_objetivo(objetivo)
-        ataque_potenciado = (self.ataque * 120) // 100
-        danio = max(0, ataque_potenciado - objetivo.defensa)
-        return objetivo.recibir_danio(danio)
-
-
-class Mago(Personaje):
-    """Guardián cuyos hechizos ignoran la defensa."""
-
-    def atacar(self, objetivo):
-        self._validar_objetivo(objetivo)
-        return objetivo.recibir_danio(self.ataque)
+    def ejecutar_habilidad(self, rival):
+        self.validar_rival(rival)
+        golpe = (self.poder * 115) // 100
+        impacto = max(0, golpe - rival.resistencia)
+        return rival.recibir_impacto(impacto)
 
 
-class Arquero(Personaje):
-    """Guardián que duplica el daño si supera la defensa rival."""
+class Hechicero(Combatiente):
+    """Utiliza energía arcana para atravesar protecciones."""
 
-    def atacar(self, objetivo):
-        self._validar_objetivo(objetivo)
-        if self.ataque > objetivo.defensa:
-            danio_base = self.ataque - objetivo.defensa
-            danio = danio_base * 2
+    def ejecutar_habilidad(self, rival):
+        self.validar_rival(rival)
+        impacto = max(1, self.poder - rival.resistencia // 3)
+        return rival.recibir_impacto(impacto)
+
+
+class Explorador(Combatiente):
+    """Busca puntos débiles para conseguir golpes precisos."""
+
+    def ejecutar_habilidad(self, rival):
+        self.validar_rival(rival)
+
+        if self.poder >= rival.resistencia + 8:
+            impacto = self.poder - rival.resistencia + 8
         else:
-            danio = 0
-        return objetivo.recibir_danio(danio)
+            impacto = max(0, self.poder - rival.resistencia)
+
+        return rival.recibir_impacto(impacto)
 
 
-class Combate:
-    """Administra los turnos de dos personajes creados previamente."""
+class GestorDuelo:
+    """Controla los turnos de dos combatientes."""
 
-    MAX_RONDAS = 50
+    LIMITE_RONDAS = 40
 
-    def __init__(self, personaje_a, personaje_b):
-        if not isinstance(personaje_a, Personaje) or not isinstance(personaje_b, Personaje):
-            raise TypeError("El combate necesita dos objetos Personaje.")
-        if personaje_a is personaje_b:
-            raise ValueError("Un personaje no puede combatir contra sí mismo.")
-        self.personajes = [personaje_a, personaje_b]
-        self.indice_turno = 0
+    def __init__(self, luchador_a, luchador_b):
+        if not isinstance(luchador_a, Combatiente):
+            raise TypeError("El primer luchador no es válido.")
+        if not isinstance(luchador_b, Combatiente):
+            raise TypeError("El segundo luchador no es válido.")
+        if luchador_a is luchador_b:
+            raise ValueError("Un luchador no puede enfrentarse a sí mismo.")
+
+        self.luchadores = [luchador_a, luchador_b]
+        self.turno = 0
         self.rondas = 0
         self.ganador = None
         self.resultado = None
 
     @property
-    def atacante_actual(self):
-        return self.personajes[self.indice_turno]
+    def luchador_actual(self):
+        return self.luchadores[self.turno]
 
     @property
-    def objetivo_actual(self):
-        return self.personajes[1 - self.indice_turno]
+    def rival_actual(self):
+        return self.luchadores[1 - self.turno]
 
     def cambiar_turno(self):
-        self.indice_turno = 1 - self.indice_turno
+        self.turno = 1 - self.turno
 
-    def verificar_ganador(self):
-        vivos = [personaje for personaje in self.personajes if personaje.esta_vivo()]
-        if len(vivos) == 1:
-            self.ganador = vivos[0]
-            self.resultado = f"Ganador: {self.ganador.nombre}"
+    def comprobar_ganador(self):
+        activos = [
+            luchador for luchador in self.luchadores
+            if luchador.sigue_en_pie()
+        ]
+
+        if len(activos) == 1:
+            self.ganador = activos[0]
+            self.resultado = f"Ganador del duelo: {self.ganador.nombre}"
             return self.ganador
-        if len(vivos) == 0:
-            self.ganador = None
-            self.resultado = "Empate: ambos personajes fueron derrotados."
+
+        if len(activos) == 0:
+            self.resultado = "Empate: ambos luchadores fueron derrotados."
             return None
+
         return None
 
     def mostrar_resultado(self):
-        if self.resultado is None:
-            return "El combate todavía no ha terminado."
-        return self.resultado
+        return self.resultado or "El duelo todavía no termina."
 
     def iniciar(self, mostrar=True):
-        """Ejecuta hasta 50 rondas; cada ronda tiene como máximo dos ataques."""
+        """Alterna los turnos hasta encontrar un resultado."""
+
         if self.resultado is not None:
             return self.mostrar_resultado()
 
         if mostrar:
-            print("\n=== COMIENZA EL COMBATE ===")
-            for personaje in self.personajes:
-                print(personaje.mostrar_estado())
+            print("\n=== COMIENZA EL DUELO ===")
+            for luchador in self.luchadores:
+                print(luchador.mostrar_datos())
 
-        while self.rondas < self.MAX_RONDAS:
-            danio_en_ronda = 0
+        while self.rondas < self.LIMITE_RONDAS:
+            impacto_ronda = 0
 
             for _ in range(2):
-                atacante = self.atacante_actual
-                objetivo = self.objetivo_actual
+                atacante = self.luchador_actual
+                rival = self.rival_actual
 
-                if not atacante.esta_vivo() or not objetivo.esta_vivo():
-                    self.verificar_ganador()
+                if not atacante.sigue_en_pie() or not rival.sigue_en_pie():
+                    self.comprobar_ganador()
                     break
 
-                danio = atacante.atacar(objetivo)
-                danio_en_ronda += danio
+                impacto = atacante.ejecutar_habilidad(rival)
+                impacto_ronda += impacto
 
                 if mostrar:
                     print(
-                        f"\n{atacante.nombre} ataca a {objetivo.nombre} "
-                        f"y causa {danio} de daño."
+                        f"\n{atacante.nombre} utiliza su habilidad "
+                        f"contra {rival.nombre} e inflige {impacto} puntos."
                     )
-                    print(self.personajes[0].mostrar_estado())
-                    print(self.personajes[1].mostrar_estado())
+                    for luchador in self.luchadores:
+                        print(luchador.mostrar_datos())
 
-                if self.verificar_ganador() is not None or self.resultado is not None:
+                self.comprobar_ganador()
+
+                if self.resultado is not None:
                     break
 
                 self.cambiar_turno()
@@ -213,13 +222,20 @@ class Combate:
             if self.resultado is not None:
                 break
 
-            if danio_en_ronda == 0:
-                self.resultado = "Empate técnico: una ronda completa sin causar daño."
+            if impacto_ronda == 0:
+                self.resultado = (
+                    "Empate técnico: nadie logró causar impacto."
+                )
                 break
 
         if self.resultado is None:
-            self.resultado = f"Empate: se alcanzó el límite de {self.MAX_RONDAS} rondas."
+            self.resultado = (
+                f"Empate: se alcanzó el límite de "
+                f"{self.LIMITE_RONDAS} rondas."
+            )
 
         if mostrar:
             print("\n" + self.mostrar_resultado())
+
         return self.mostrar_resultado()
+
