@@ -1,12 +1,13 @@
 
 
-"""Programa principal del reino de Valdoria."""
+```python
+"""Programa principal del reino de Eldoria."""
 
 from personajes import (
-    Centinela,
-    Hechicero,
-    Explorador,
-    GestorDuelo,
+    Guerrero,
+    Mago,
+    Arquero,
+    Combate,
 )
 
 
@@ -20,87 +21,74 @@ def comprobar_error(descripcion, accion):
 
 
 def ejecutar_programa():
-    print("LAS CRÓNICAS DEL REINO DE VALDORIA")
-    print("=" * 40)
+    print("EL REINO DE ELDORIA")
+    print("=" * 35)
 
     print("\n1. Creación de personajes")
 
-    guardia = Centinela("Aldric", 115, 30, 16)
-    invocadora = Hechicero("Lyra", 90, 36, 11)
-    rastreador = Explorador("Eiden", 100, 32, 13)
+    guerrero = Guerrero("Aldric", 120, 32, 18)
+    mago = Mago("Lyra", 95, 38, 12)
+    arquero = Arquero("Eiden", 105, 34, 14)
 
-    for personaje in (guardia, invocadora, rastreador):
+    for personaje in (guerrero, mago, arquero):
         print(personaje.mostrar_datos())
 
     print("\n2. Prueba de habilidades")
 
-    objetivo = Centinela("Centinela de práctica", 120, 14, 10)
+    objetivo = Guerrero("Guardia de prueba", 120, 15, 10)
 
-    impacto = guardia.ejecutar_habilidad(objetivo)
-    print(f"Impacto de Aldric: {impacto}")
+    impacto = guerrero.ejecutar_habilidad(objetivo)
+    print(f"Impacto del Guerrero: {impacto} (esperado: 26)")
 
-    objetivo.energia = 120
-    impacto = invocadora.ejecutar_habilidad(objetivo)
-    print(f"Impacto de Lyra: {impacto}")
+    objetivo.vida = 120
+    impacto = mago.ejecutar_habilidad(objetivo)
+    print(f"Impacto del Mago: {impacto} (esperado: 35)")
 
-    objetivo.energia = 120
-    objetivo.resistencia = 14
-    impacto = rastreador.ejecutar_habilidad(objetivo)
-    print(f"Impacto de Eiden: {impacto}")
+    objetivo.vida = 120
+    objetivo.defensa = 14
+    impacto = arquero.ejecutar_habilidad(objetivo)
+    print(f"Impacto del Arquero: {impacto} (esperado: 28)")
 
     print("\n3. Validación de datos")
 
     comprobar_error(
         "Nombre vacío",
-        lambda: Centinela("", 100, 20, 5),
+        lambda: Guerrero("", 100, 20, 5),
     )
 
     comprobar_error(
-        "Energía superior al límite",
-        lambda: Hechicero("Prueba", 130, 20, 5),
+        "Vida superior al límite",
+        lambda: Mago("Prueba", 130, 20, 5),
     )
 
     comprobar_error(
-        "Poder igual a cero",
-        lambda: Explorador("Prueba", 80, 0, 5),
+        "Ataque igual a cero",
+        lambda: Arquero("Prueba", 80, 0, 5),
     )
 
     comprobar_error(
-        "Resistencia negativa",
-        lambda: Centinela("Prueba", 80, 20, -1),
+        "Defensa negativa",
+        lambda: Guerrero("Prueba", 80, 20, -1),
     )
 
     comprobar_error(
         "Impacto negativo",
-        lambda: guardia.recibir_impacto(-3),
+        lambda: guerrero.recibir_impacto(-3),
     )
 
-    print("\n4. Comprobación de energía mínima")
+    print("\n4. Comprobación de vida mínima")
 
-    resistente = Centinela("Durnak", 10, 5, 2)
+    resistente = Guerrero("Bastión", 10, 5, 2)
     impacto_real = resistente.recibir_impacto(50)
 
     print(f"Impacto efectivo: {impacto_real}")
-    print(f"Energía restante: {resistente.energia}")
+    print(f"Vida restante: {resistente.vida}")
 
-    print("\n5. Duelo entre personajes")
+    print("\n5. Combate entre dos personajes")
 
-    aldric = Centinela("Aldric", 115, 30, 16)
-    lyra = Hechicero("Lyra", 90, 36, 11)
+    aldric = Guerrero("Aldric", 120, 32, 18)
+    lyra = Mago("Lyra", 95, 38, 12)
 
-    duelo = GestorDuelo(aldric, lyra)
-    print(duelo.iniciar())
-
-    print("\n6. Prueba de empate técnico")
-
-    primero = Centinela("Piedra Gris", 100, 5, 100)
-    segundo = Centinela("Muro del Norte", 100, 5, 100)
-
-    empate = GestorDuelo(primero, segundo)
-    print(empate.iniciar())
-
-
-if __name__ == "__main__":
-    ejecutar_programa()
+    combate = Combate(aldric
 
 
